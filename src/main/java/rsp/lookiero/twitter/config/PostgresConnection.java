@@ -14,9 +14,9 @@ public class PostgresConnection {
 
 	private static Logger logger = Logger.getLogger(PostgresConnection.class.getName());
 
-	String url = "jdbc:postgresql://ec2-99-80-170-190.eu-west-1.compute.amazonaws.com:5432/d7vhhcscmjq2gr";
-	String user = "irpxhviajnffkm";
-	String password = "4911618bc6ed758f6740bc30c355895f0f1799f47ae59f3e81a8d9da00e7e8dd";
+	String url = "jdbc:postgresql://ec2-52-30-159-47.eu-west-1.compute.amazonaws.com:5432/ddno89e61ojo1l";
+	String user = "vgrrtwupgtqbjp";
+	String password = "86aec189e179ad24ccbc9cc1f9c963c3c9303eb22db4186b2728019bf796907a";
 
 	public Connection connect() {
 		Connection conn = null;
