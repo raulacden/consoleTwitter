@@ -5,8 +5,9 @@ import java.util.Scanner;
 public class ConsoleIO {
 	
 	public String readLine() {
-		Scanner in = new Scanner(System.in);
-		return in.nextLine();
+		try (Scanner in = new Scanner(System.in)) {
+			return in.nextLine();
+		}
 	}
 	
 	public void printLine(String text) {
