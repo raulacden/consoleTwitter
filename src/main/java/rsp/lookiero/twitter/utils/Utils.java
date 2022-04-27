@@ -16,13 +16,13 @@ public class Utils {
 		long diffDays = ChronoUnit.DAYS.between(posted, now);
 		
 		if( diffDays > 0) {
-			finalString = diffDays > 1 ? " ( "+ diffDays + " days ago)" : " ( "+ diffDays + " day ago)";
+			finalString = diffDays > 1 ? " ("+ diffDays + " days ago)" : " ("+ diffDays + " day ago)";
 		}else if(diffHours > 0) {
-			finalString = diffHours > 1 ? " ( "+ diffHours + " hours ago)" : " ( "+ diffHours + " hour ago)";			
+			finalString = diffHours > 1 ? " ("+ diffHours + " hours ago)" : " ("+ diffHours + " hour ago)";
 		}else if(diffMin > 0) {
-			finalString = diffMin > 1 ? " ( "+ diffMin + " minutes ago)" : " ( "+ diffMin + " minute ago)";
+			finalString = diffMin > 1 ? " ("+ diffMin + " minutes ago)" : " ("+ diffMin + " minute ago)";
 		}else {
-			finalString = diffSeconds > 1 ? " ( "+ diffSeconds + " seconds ago)" : " ( "+ diffSeconds + " second ago)";
+			finalString = diffSeconds > 1 ? " ("+ diffSeconds + " seconds ago)" : " ("+ diffSeconds + " second ago)";
 		}
 		
 		return finalString;

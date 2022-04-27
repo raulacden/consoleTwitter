@@ -25,57 +25,63 @@ public class Twitter {
 	
 	public void start() {
 
-        String inputText = console.readLine();        
-
-        //Post
-        if(inputText.contains("->")) {
-
-        	String[] splittedText = inputText.split("->");
-        	newPosts(newUser(splittedText[0].strip()),splittedText[1].strip());
-
-        //Follow	
-        } else if(inputText.contains("follows")) {
-
-        	String[] splittedText = inputText.split("follows");
-
-        	int followerId = isAlreadyUser(splittedText[0].strip());
-        	int followedId = isAlreadyUser(splittedText[1].strip());
-
-    		if(followerId == 0) {
-            	console.printLine("This follower ("+splittedText[0].strip()+") does not exist");
-        	}else if(followedId == 0) {
-            	console.printLine("Can't follow "+splittedText[1].strip()+", does not exist");
-        	}else if(isAlreadyFollowed(followerId,followedId)) {
-    			console.printLine(splittedText[0].strip() + " is already following "+splittedText[1].strip());
-    		}else {
-        		followUsers(followerId,followedId);
-        	}
-
-        //Wall
-        } else if(inputText.contains("wall")) {
-        	
-        	String[] splittedText = inputText.split("wall");
-        	
-        	int userId = isAlreadyUser(splittedText[0].strip());
-        	
-        	if(userId == 0) {
-        		console.printLine("This user ("+splittedText[0].strip()+") does not exist");
-        	}else {
-        		printWall(userId);
-        	}
-
-        //Read	
-        }else {
-
-        	int userId = isAlreadyUser(inputText.strip());
-
-        	if(userId == 0) {
-        		console.printLine(inputText.strip()+ " is not a registered user name");
-        	}else {
-        		readPosts(userId, inputText.strip());
-        	}
+        String inputText = console.readLine();  
+        
+        if("Close".equals(inputText)) {
+        	console.printLine("BYE!");
+        	console.closeLine();
+        }else {      
+	
+	        //Post
+	        if(inputText.contains("->")) {
+	
+	        	String[] splittedText = inputText.split("->");
+	        	newPosts(newUser(splittedText[0].strip()),splittedText[1].strip());
+	
+	        //Follow	
+	        } else if(inputText.contains("follows")) {
+	
+	        	String[] splittedText = inputText.split("follows");
+	
+	        	int followerId = isAlreadyUser(splittedText[0].strip());
+	        	int followedId = isAlreadyUser(splittedText[1].strip());
+	
+	    		if(followerId == 0) {
+	            	console.printLine("This follower ("+splittedText[0].strip()+") does not exist");
+	        	}else if(followedId == 0) {
+	            	console.printLine("Can't follow "+splittedText[1].strip()+", does not exist");
+	        	}else if(isAlreadyFollowed(followerId,followedId)) {
+	    			console.printLine(splittedText[0].strip() + " is already following "+splittedText[1].strip());
+	    		}else {
+	        		followUsers(followerId,followedId);
+	        	}
+	
+	        //Wall
+	        } else if(inputText.contains("wall")) {
+	        	
+	        	String[] splittedText = inputText.split("wall");
+	        	
+	        	int userId = isAlreadyUser(splittedText[0].strip());
+	        	
+	        	if(userId == 0) {
+	        		console.printLine("This user ("+splittedText[0].strip()+") does not exist");
+	        	}else {
+	        		printWall(userId);
+	        	}
+	
+	        //Read	
+	        }else {
+	
+	        	int userId = isAlreadyUser(inputText.strip());
+	
+	        	if(userId == 0) {
+	        		console.printLine(inputText.strip()+ " is not a registered user name");
+	        	}else {
+	        		readPosts(userId, inputText.strip());
+	        	}
+	        }
+			start(); 
         }
-		start();        
 	}
 
 	/**
@@ -84,7 +90,7 @@ public class Twitter {
 	 * @param userId
 	 * @param text
 	 */
-	private void newPosts(int userId,String text) {
+	public void newPosts(int userId,String text) {
     	Posts newPost = new Posts();        	
     	newPost.setUser_id(userId);
     	newPost.setText(text);
@@ -100,7 +106,7 @@ public class Twitter {
 	 * @param followerId
 	 * @param followedId
 	 */
-	private void followUsers(int followerId, int followedId) {
+	public void followUsers(int followerId, int followedId) {
 		followsDaoImpl.insert(followerId, followedId);
 		
     	console.printLine("Followed!");
@@ -111,7 +117,7 @@ public class Twitter {
 	 * 
 	 * @param userId
 	 */
-	private void printWall(int userId) {		
+	public void printWall(int userId) {		
 
 		List<Posts> listFollowerPosts = followsDaoImpl.obtainFollowers(userId)
 				.stream()
@@ -131,7 +137,7 @@ public class Twitter {
 	 * @param userId
 	 * @param name
 	 */
-	private void readPosts(int userId, String name) {		
+	public void readPosts(int userId, String name) {		
 		List<Posts> listPosts = postsDaoImpl.obtainByUser(userId);
 				
 		listPosts.sort(Comparator.comparing(Posts::getDate).reversed());
@@ -147,7 +153,7 @@ public class Twitter {
 	 * @param name
 	 * @return
 	 */
-	private int newUser(String name) {		
+	public int newUser(String name) {		
 		int dbUser = 0;
 		dbUser = isAlreadyUser(name);
 		
@@ -166,7 +172,7 @@ public class Twitter {
 	 * @param name
 	 * @return
 	 */
-	private int isAlreadyUser(String name){		
+	public int isAlreadyUser(String name){		
 		List<User> listUsers = new ArrayList<>();
 		int dbUserId = 0;
 		
@@ -179,7 +185,7 @@ public class Twitter {
 		return dbUserId;
 	}
 	
-	private boolean isAlreadyFollowed(int followerId, int followedId) {
+	public boolean isAlreadyFollowed(int followerId, int followedId) {
 		List<Follows> listFollows = followsDaoImpl.obtainFollowers(followerId);
 				
 		return listFollows.stream()
