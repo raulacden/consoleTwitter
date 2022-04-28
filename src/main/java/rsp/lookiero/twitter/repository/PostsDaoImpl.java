@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,7 @@ import rsp.lookiero.twitter.model.Posts;
 
 public class PostsDaoImpl implements PostsDao {
 	
-	PostgresConnection pgConnection;
+	PostgresConnection pgConnection = new PostgresConnection();
 	
 	static {
 		String path = PostsDaoImpl.class.getClassLoader().getResource("logging.properties").getFile();
@@ -26,15 +25,19 @@ public class PostsDaoImpl implements PostsDao {
 
 	@Override
 	public void insert(Posts posts) {
+		
 		Connection conn = null;
-		pgConnection = new PostgresConnection();
+		String insertPostsSQL = "Insert into posts (user_id,text) values (?,?)";
+		
         try {
-           conn = pgConnection.connect();
-            try (Statement stmt = conn.createStatement()) {                
-                stmt.executeUpdate("insert into posts(user_id,text) values ("
-                        + posts.getUser_id() + ",'"
-                        + posts.getText() + "');");
-            }
+        	conn = pgConnection.connect();
+        	PreparedStatement pst = conn.prepareStatement(insertPostsSQL);
+        	
+        	pst.setInt(1,  posts.getUser_id());
+        	pst.setString(2, posts.getText());
+        	
+			pst.executeUpdate();
+        	
         } catch (SQLException e) {
         	logger.severe(e.getMessage());
             throw new RuntimeException(e);
@@ -49,31 +52,25 @@ public class PostsDaoImpl implements PostsDao {
         }
 		
 	}
-
-	@Override
-	public void deleteById(Integer id) {		
-		
-	}
+	
 
 	@Override
 	public List<Posts> obtainByUser(int userId) {
 
-		Connection conn = null;
-		
-		pgConnection = new PostgresConnection();
-
 		List<Posts> listPosts = new ArrayList<>();
-		
-		String SQL = "SELECT * "
+
+		Connection conn = null;		
+		String obtainPostsSQL = "SELECT * "
                 + "FROM posts "
                 + "WHERE user_id = ?";
 
         try {
         	conn = pgConnection.connect();       
-            PreparedStatement pstmt = conn.prepareStatement(SQL);
+            PreparedStatement pst = conn.prepareStatement(obtainPostsSQL);
 
-            pstmt.setInt(1, userId);
-            ResultSet rs = pstmt.executeQuery();		
+            pst.setInt(1, userId);
+            
+            ResultSet rs = pst.executeQuery();		
 				
 			while (rs.next()) {
 				Posts posts = new Posts();

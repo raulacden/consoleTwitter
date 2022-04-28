@@ -9,5 +9,6 @@ public interface UsersDao {
 	public List<User> obtainCurrentUsers();
 	public int insert(User user);
 	public String getNameById(int userId);
+	public int getIdByName(String name);
 
 }

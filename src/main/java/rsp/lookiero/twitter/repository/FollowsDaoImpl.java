@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,7 +13,7 @@ import rsp.lookiero.twitter.model.Follows;
 
 public class FollowsDaoImpl implements FollowsDao {
 	
-PostgresConnection pgConnection;
+	PostgresConnection pgConnection = new PostgresConnection();
 	
 	static {
 		String path = FollowsDaoImpl.class.getClassLoader().getResource("logging.properties").getFile();
@@ -27,14 +26,17 @@ PostgresConnection pgConnection;
 	public void insert(int follower, int followed) {
 		
 		Connection conn = null;
-		pgConnection = new PostgresConnection();
-        try {
+		String insertFollowsSQL = "insert into follows (user_id,user_id_followed) values (?,?)";
+				
+        try {        	
         	conn = pgConnection.connect();
-	        try (Statement stmt = conn.createStatement()) {                
-	            stmt.executeUpdate("insert into follows(user_id,user_id_followed) values ("
-	                    + follower + ","
-	                    + followed + ");");
-	        }
+        	PreparedStatement pst = conn.prepareStatement(insertFollowsSQL);
+        	
+        	pst.setInt(1, follower);
+        	pst.setInt(2, followed);
+        	
+			pst.executeUpdate();        	
+	        
         } catch (SQLException e) {
         	logger.severe(e.getMessage());
             throw new RuntimeException(e);
@@ -53,21 +55,20 @@ PostgresConnection pgConnection;
 	@Override
 	public List<Follows> obtainFollowers(int follower_id) {
 		
-		Connection conn = null;
-		pgConnection = new PostgresConnection();
-
 		List<Follows> listFollows = new ArrayList<>();
-
-		String SQL = "SELECT * "
-                + "FROM follows "
-                + "WHERE user_id = ?";
+		
+		Connection conn = null;
+		String obtainFollowersSQL = "SELECT * "
+					                + "FROM follows "
+					                + "WHERE user_id = ?";
 
         try {
         	conn = pgConnection.connect();       
-            PreparedStatement pstmt = conn.prepareStatement(SQL);
+            PreparedStatement pst = conn.prepareStatement(obtainFollowersSQL);
 
-            pstmt.setInt(1, follower_id);
-            ResultSet rs = pstmt.executeQuery();		
+            pst.setInt(1, follower_id);
+            
+            ResultSet rs = pst.executeQuery();		
 				
 			while (rs.next()) {
 				Follows follows = new Follows();

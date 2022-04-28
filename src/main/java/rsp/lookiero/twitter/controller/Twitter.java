@@ -1,9 +1,7 @@
 package rsp.lookiero.twitter.controller;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import rsp.lookiero.twitter.model.Follows;
@@ -22,6 +20,8 @@ public class Twitter {
 	PostsDaoImpl postsDaoImpl = new PostsDaoImpl();
 	FollowsDaoImpl followsDaoImpl = new FollowsDaoImpl();	
 	Utils utils = new Utils();
+	
+
 	
 	public void start() {
 
@@ -43,8 +43,8 @@ public class Twitter {
 	
 	        	String[] splittedText = inputText.split("follows");
 	
-	        	int followerId = isAlreadyUser(splittedText[0].strip());
-	        	int followedId = isAlreadyUser(splittedText[1].strip());
+	        	int followerId = usersDaoImpl.getIdByName(splittedText[0].strip());
+	        	int followedId = usersDaoImpl.getIdByName(splittedText[1].strip());
 	
 	    		if(followerId == 0) {
 	            	console.printLine("This follower ("+splittedText[0].strip()+") does not exist");
@@ -60,8 +60,7 @@ public class Twitter {
 	        } else if(inputText.contains("wall")) {
 	        	
 	        	String[] splittedText = inputText.split("wall");
-	        	
-	        	int userId = isAlreadyUser(splittedText[0].strip());
+	        	int userId = usersDaoImpl.getIdByName(splittedText[0].strip());
 	        	
 	        	if(userId == 0) {
 	        		console.printLine("This user ("+splittedText[0].strip()+") does not exist");
@@ -72,7 +71,7 @@ public class Twitter {
 	        //Read	
 	        }else {
 	
-	        	int userId = isAlreadyUser(inputText.strip());
+	        	int userId = usersDaoImpl.getIdByName(inputText.strip());
 	
 	        	if(userId == 0) {
 	        		console.printLine(inputText.strip()+ " is not a registered user name");
@@ -117,15 +116,16 @@ public class Twitter {
 	 * 
 	 * @param userId
 	 */
-	public void printWall(int userId) {		
+	public void printWall(int userId) {
+		
+		List<Posts> listUserPosts = postsDaoImpl.obtainByUser(userId);	
 
-		List<Posts> listFollowerPosts = followsDaoImpl.obtainFollowers(userId)
+		List<Posts> listFollowedPosts = followsDaoImpl.obtainFollowers(userId)
 				.stream()
 				.flatMap(follower -> postsDaoImpl.obtainByUser(follower.getUser_id_followed()).stream())
-				.collect(Collectors.toList());		
-		List<Posts> listUserPosts = postsDaoImpl.obtainByUser(userId);		
-		listUserPosts.addAll(listFollowerPosts);
+				.collect(Collectors.toList());	
 		
+		listUserPosts.addAll(listFollowedPosts);		
 		listUserPosts.stream().sorted(Comparator.comparing(Posts::getDate).reversed()).forEach(posts -> System.out.println(usersDaoImpl.getNameById(posts.getUser_id()) + " -> " + posts.getText() + utils.dateComparator(posts.getDate())));
 		
 		console.printLine("Nothing else...");
@@ -142,7 +142,7 @@ public class Twitter {
 				
 		listPosts.sort(Comparator.comparing(Posts::getDate).reversed());
 
-		listPosts.forEach(posts -> System.out.println(name + " -> " + posts.getText() + utils.dateComparator(posts.getDate())));
+		listPosts.forEach(posts -> System.out.println(posts.getText() + utils.dateComparator(posts.getDate())));
 		
 		console.printLine("Nothing else...");
 	}
@@ -155,7 +155,7 @@ public class Twitter {
 	 */
 	public int newUser(String name) {		
 		int dbUser = 0;
-		dbUser = isAlreadyUser(name);
+		dbUser = usersDaoImpl.getIdByName(name);
 		
 		if(dbUser == 0) {
 			User newUser = new User();
@@ -164,26 +164,7 @@ public class Twitter {
 		}
 		
 		return dbUser;
-	}
-	
-	/**
-	 * Check if the user already exists in the DB
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public int isAlreadyUser(String name){		
-		List<User> listUsers = new ArrayList<>();
-		int dbUserId = 0;
-		
-		listUsers = usersDaoImpl.obtainCurrentUsers();
-		Optional<User> dbUser = listUsers.stream().filter(user -> name.equals(user.getUsername())).findFirst();
-		if (dbUser.isPresent()) {
-			dbUserId = dbUser.get().getId();
-		}
-
-		return dbUserId;
-	}
+	}	
 	
 	public boolean isAlreadyFollowed(int followerId, int followedId) {
 		List<Follows> listFollows = followsDaoImpl.obtainFollowers(followerId);

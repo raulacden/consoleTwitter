@@ -14,6 +14,10 @@ public class Posts {
 		return id;
 	}
 
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
 	public Integer getUser_id() {
 		return user_id;
 	}

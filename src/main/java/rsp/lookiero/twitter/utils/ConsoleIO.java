@@ -4,15 +4,10 @@ import java.util.Scanner;
 
 public class ConsoleIO {
 	
-	private Scanner in;
+	private Scanner in = new Scanner(System.in);	
 	
-	public String readLine() {
-		try {
-			in = new Scanner(System.in);		
-			return in.nextLine();
-		}finally {
-			in.close();
-		}
+	public String readLine() {		
+		return in.nextLine();		
 	}
 	
 	public void closeLine() {

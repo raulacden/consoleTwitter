@@ -14,7 +14,7 @@ import rsp.lookiero.twitter.model.User;
 
 public class UsersDaoImpl implements UsersDao {
 
-	PostgresConnection pgConnection;
+	PostgresConnection pgConnection = new PostgresConnection();
 
 	static {
 		String path = UsersDaoImpl.class.getClassLoader().getResource("logging.properties").getFile();
@@ -27,7 +27,6 @@ public class UsersDaoImpl implements UsersDao {
 	public List<User> obtainCurrentUsers() {
 
 		Connection conn = null;
-		pgConnection = new PostgresConnection();
 
 		List<User> listUsers = new ArrayList<>();
 
@@ -63,17 +62,17 @@ public class UsersDaoImpl implements UsersDao {
 	public int insert(User user) {	
 
 		Connection conn = null;
-		pgConnection = new PostgresConnection();
 		int userId;
 		String insertUserSQL = "Insert into users (username) values (?)";
 		
 		try {
 			conn = pgConnection.connect();
-			PreparedStatement prepStmt = conn.prepareStatement(insertUserSQL, Statement.RETURN_GENERATED_KEYS);
-			prepStmt.setString(1, user.getUsername());
-		    prepStmt.executeUpdate();
+			PreparedStatement pst = conn.prepareStatement(insertUserSQL, Statement.RETURN_GENERATED_KEYS);
+			
+			pst.setString(1, user.getUsername());
+			pst.executeUpdate();
 		
-			try (ResultSet generatedKeys = prepStmt.getGeneratedKeys()) {
+			try (ResultSet generatedKeys = pst.getGeneratedKeys()) {
 			      if (generatedKeys.next()) {
 			        userId = generatedKeys.getInt(1);
 			      }
@@ -95,15 +94,13 @@ public class UsersDaoImpl implements UsersDao {
 			}
 		}
 		
-		return userId;		
-				
+		return userId;				
 	}
 
 	@Override
 	public String getNameById(int userId) {
 
 		Connection conn = null;
-		pgConnection = new PostgresConnection();
 		
 		String name = "";
 		
@@ -113,10 +110,10 @@ public class UsersDaoImpl implements UsersDao {
 
         try {
         	conn = pgConnection.connect();       
-            PreparedStatement pstmt = conn.prepareStatement(SQL);
+            PreparedStatement pst = conn.prepareStatement(SQL);
 
-            pstmt.setInt(1, userId);
-            ResultSet rs = pstmt.executeQuery();		
+            pst.setInt(1, userId);
+            ResultSet rs = pst.executeQuery();		
             while (rs.next()) {
             	name = rs.getString(1);
             }
@@ -134,6 +131,42 @@ public class UsersDaoImpl implements UsersDao {
 			}
 		}
         return name;
+	}
+
+	@Override
+	public int getIdByName(String inputName) {
+		
+		Connection conn = null;
+		
+		int user_id = 0;
+		
+		String SQL = "SELECT id "
+                + "FROM users "
+                + "WHERE username = ?";
+
+        try {
+        	conn = pgConnection.connect();       
+            PreparedStatement pst = conn.prepareStatement(SQL);
+
+            pst.setString(1, inputName);
+            ResultSet rs = pst.executeQuery();		
+            while (rs.next()) {
+            	user_id = rs.getInt(1);
+            }
+
+		} catch (SQLException e) {
+			logger.severe(e.getMessage());
+			throw new RuntimeException(e);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+        return user_id;
 	}
 
 }
